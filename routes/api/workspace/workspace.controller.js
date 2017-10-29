@@ -2,8 +2,8 @@ var mongoose = require('mongoose')
 var Promise=require('bluebird')
 mongoose.Promise =Promise
 
-var ProcessInstance=require('../../models/process-model')
-var Workspace=require('../../models/workspace-model')
+var ProcessInstance=require('../../../models/process-model')
+var Workspace=require('../../../models/workspace-model')
 
 var workspaceCtrl={
 

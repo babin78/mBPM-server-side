@@ -1,6 +1,5 @@
 var router = require('express').Router();
-var workspaceCtrl=require('./workspace.controller')
 
-router.get('/getview',(req,res)=>workspaceCtrl.getview(req,res))
-router.post('/createworkspace/:name',(req,res)=>workspaceCtrl.createworkspace(req,res))
+router.use('/workspace', require('./workspace'));
+
 module.exports = router;
