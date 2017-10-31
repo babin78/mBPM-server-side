@@ -23,6 +23,31 @@ var workspaceCtrl={
     .catch(err=>{res.send(err)})
 
   },
+  deleteworkspace:function(req,res){
+
+     var conditionstr
+    if(req.query && req.query.name )
+    {
+
+      conditionstr={name:req.query.name}
+
+      Workspace.find(conditionstr)
+      .then(data=>{
+          if(!data)
+          { return res.status(200).send('data deleted successfully')}
+             
+      })
+      .catch(err=>{res.send(err)})
+
+
+  }
+    else
+     {
+       return res.status(400).send('no workspace-name is specified')
+     }
+
+
+  },
 
   createworkspace:function(req,res){
 

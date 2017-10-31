@@ -4,7 +4,8 @@ var workitemSchema=new mongoose.Schema({
   status:String, //locked//processing//done//available
   lockedby:String,
   queue:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
-  ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'}
+  ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
+  workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'}
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 //workitemSchema.plugin(uniqueValidator,{message:'is already taken'});
 

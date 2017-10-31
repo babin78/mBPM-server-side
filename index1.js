@@ -3,9 +3,11 @@ var methods=require('methods')
 var express=require('express')
 var bodyparser=require('body-parser')
 var  session = require('express-session')
-var morgan=require('morgan')
+var logger=require('morgan')
 var methodoverride=require('method-override')
 var errorhandler = require('errorhandler')
+
+
 process.env.NODE_ENV=process.env.NODE_ENV || 'development'
 
 var mongoose = require('mongoose');
@@ -32,6 +34,17 @@ mongoose.connect(config.dbURL, config.mongo.options).catch(err=>{
 
 
 var app=express()
+// Setting up basic middleware for all Express requests
+app.use(logger('dev')); // Log requests to API using morgan
+
+// Enable CORS from client-side
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Credentials");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 app.use(bodyparser.urlencoded({ extended: false }));
 
 app.use(bodyparser.json())
