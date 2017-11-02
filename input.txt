@@ -1,0 +1,18 @@
+{ 
+  "action":"CREATE",
+  "workspace":"Dummy",
+  "process":
+			{
+			  
+			  "processname":"outward",
+			  
+			  "queues":[
+				  
+				  {"workstepname":"work intrudoction", "state":"STart","rules":[""]}, 
+				  {"workstepname":"Work INTrudoction", "state":"Start","RULES":[""]}
+				  
+			  ]
+			  
+				 
+			}
+}

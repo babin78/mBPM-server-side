@@ -15,12 +15,13 @@ var config=require('./config')
 var Promise=require('bluebird')
 mongoose.Promise =Promise
 
-
+/*
 var ProcessInstance=require('./models/process-model')
 var Workspace=require('./models/workspace-model')
 var Workitem=require('./models/workitem-model')
 var Queue=require('./models/queue-model')
 var User=require('./models/user-model')
+*/
 /*
 Promise.then(_=>{
    console.log('all data saved')
@@ -50,11 +51,12 @@ app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json())
 app.use(session({ secret: 'validate', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false  }));
 
+app.use(require('./routes'));
+
 if (process.env.NODE_ENV != 'production') {
   app.use(errorhandler());
 }
 
-app.use(require('./routes'));
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

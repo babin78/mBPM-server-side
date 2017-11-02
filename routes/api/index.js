@@ -4,6 +4,6 @@ var apiauth=require('./api.auth.middleware')
 //with apikey
 //router.use('/workspace',apiauth, require('./workspace'));
 router.use('/workspace', require('./workspace'));
-router.use('/apikey', require('./apikey'));
-
+//router.use('/apikey', require('./apikey'));
+router.use('/process', require('./process'));
 module.exports = router;

@@ -1,0 +1,64 @@
+
+      else{
+        isruleBookentryFound=true
+        if (!(!_.isArray(obj.process.rulebook) && obj.process.rulebook.length>0   ))
+        {
+          isruleBookArrayFound=false
+          isruleBookentrydefined=false
+           return {err:'process{rulebook:} is not defined'}
+
+        }
+
+      }
+
+      if(obj.process.queues.length==0  ){
+          return {err:'process{queues:} should not be empty'}
+
+          var isAllPropertyFound=true
+          var dupWorksteps=_.chain(obj.process.queues).groupBy('workstepname').filter(function(v){return v.length > 1}).flatten().value()
+          if(dupWorksteps.length>0)
+          return {err:'process{queues:} duplicate workstep is defined'}
+
+          var isAllStateValid=false
+          var isAllhaveRules=false
+          var startStateCount=0
+          var endStateCount=0
+          var isRuleDefined
+
+          _.each(process.queues,q=>{
+            if(!(_.has(q, "workstepname") && _.has(q, "state") && _.has(q, "rules")  ))
+              isAllPropertyFound=false
+              if('start' ===q.state)
+                 startStateCount++
+                 if('end' === q.state)
+                    endStateCount++
+                   var rulearrays= q.rules
+                   if(!(_.isArray(rulearrays) && rulearrays.length>0))
+                        isRuleDefined=false
+
+                //check each rule entry should be in rulebook array
+
+          })
+
+          if(!isRuleDefined)
+          return {err:'process{queues:} not all queue rule array is is defined '}
+          if(startStateCount==0 && endStateCount==0 )
+          return {err:'process{queues:} no start/end state is defined '}
+
+          if(startStateCount>1 || endStateCount>1 )
+          return {err:'process{queues:} multple start/end state is defined '}
+
+        }
+        if (!Array.isArray(obj.process.rulebook)  )
+        {  return {err:'process{rulebook:} should be an array'}
+
+        }
+        else if(obj.process.rulebook.length==0  ){
+            return {err:'process{rulebook:} should not be empty'}
+
+          }
+
+
+
+  return null
+

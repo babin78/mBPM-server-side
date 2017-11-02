@@ -1,0 +1,49 @@
+{ 
+  action:"create",
+  workspace:"dummy"
+  process:
+			{
+			  
+			  processname:<process-name>
+			  
+			  queues:[
+				  
+				  {workstepname:'work intrudoction' , state:'start',rules:['rule1']}
+				  {workstepname:'decision1', state:'decision',rules:['rule3','rule4','rule5']},
+				  {workstepname:'discard', state:'end',rules:'NULL'},
+				  {workstepname:'exit', state:'end',rules:'NULL'},
+				  {workstepname:'data-entry', state:'custom',rules:['rule2']},
+				  {workstepname:'ckecher', state:'custom',rules:['rule6']},
+				  {workstepname:'decision2', state:'decision',rules:['rule7','rule8','rule9']},
+				  {workstepname:'split', state:'split',rules:['rule10']},
+				  {workstepname:'join', state:'join',rules:['rule11']},
+				  {workstepname:'tech-verify', state:'custom',rules:['rule12']},
+				  {workstepname:'filegenerate', state:'custom',rules:['rule13']},
+				  {workstepname:'readresponse', state:'custom',rules:['rule14']}	  
+				  
+			  ],
+			  
+			   rulebook:[
+				 {rulename:'rule1',type:'auto',to:'data entry' },
+				 {rulename:'rule2',type:'auto',to:'decision1'},
+				 {rulename:'rule3',type:'decision',condition:{ $and:{ {amount>100},{acceptflag='accept'}}}, to:'checker'},
+				 {rulename:'rule4',type:'decision',condition: {discardflag='discard'},to:'discard'},
+				 {rulename:'rule5',type:'decision',condition: else, to:'datanetry'},
+				 
+				 {rulename:'rule6',type:'auto',to:'decision2'},
+				 {rulename:'rule7',type:'decision',condition:{acceptflag='accept'}, ,to:'split'},
+				 {rulename:'rule8',type:'decision',condition: {discardflag='discard'}, to:'discard'},
+				 {rulename:'rule9',type:'decision',condition: else, to:'checker'},
+				 
+				 {rulename:'rule10',type:'split',to:'techvieryfy'},
+				 {rulename:'rule11',type:'split',to:'filegen'},
+				 {rulename:'rule12',type:'auto',to:'join'},
+				 {rulename:'rule13',type:'auto',to:'read-response'},
+				 {rulename:'rule14',type:'auto',to:'join'},
+				 {rulename:'rule14',type:'auto',to:'exit'} 	 
+				 
+			   ]
+			  
+				 
+			}
+}

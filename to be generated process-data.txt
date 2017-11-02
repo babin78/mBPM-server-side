@@ -8,7 +8,7 @@
   
   id=1
   processname:'outward'
-  , queuename:processname@workstepname, state:'enabled'
+  state:'enabled'
   workspace:'dummy',
   
   queues:[

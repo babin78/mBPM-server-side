@@ -6,12 +6,13 @@ var workspaceSchema=new mongoose.Schema({
   index: true,
   unique: true
 },
-  processes:[{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'}],
+  //processes:[{ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'}}],
+  processes:[{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'}]
 
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 
 workspaceSchema.plugin(uniqueValidator,{message:'is already taken'});
-
+/*
 var autoPopulateWorkspace = function(next) {
     this.populate('processes');
     next();
@@ -22,5 +23,5 @@ workspaceSchema
 .pre('findOne', autoPopulateWorkspace)
 .pre('find', autoPopulateWorkspace)
 .pre('findById', autoPopulateWorkspace)
-
+*/
 module.exports=mongoose.model('Workspace',workspaceSchema)

@@ -1,22 +1,26 @@
 var mongoose=require('mongoose')
 var uniqueValidator=require('mongoose-unique-validator');
+var types=['start','end','decision','split','join','custom','set','expire']
 var queueSchema=new mongoose.Schema({
-  name:{type: String, lowercase: true, required: [true, "can't be blank"],
+  queuename:{type: String, lowercase: true, required: [true, "can't be blank"],
   //match: [/^[a-zA-Z0-9]$/, 'is invalid'],
   index: true,
   unique: true
 },
-  state:String, //start//end/custom/decision/split/join
+  queuetype:{type: String, lowercase: true, enum:types,required: [true, "can't be blank"]}, //start//end/custom/decision/split/join
   //prev:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
   //next:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
   //prev:{},
   //next:{},
+  rules:[{type:mongoose.Schema.Types.ObjectId,ref:'Rule'}],
+  workstep:{type: String, lowercase: true, required: [true, "can't be blank"],enum:types},
   workitems:[{type:mongoose.Schema.Types.ObjectId,ref:'Workitem'}],
   ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
-  workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'}
+  workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},
+
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 queueSchema.plugin(uniqueValidator,{message:'is already taken'});
-
+/*
 queueSchema.virtual('itemcount').get(function () {
   return this.workitems.length;
 });
@@ -34,5 +38,5 @@ queueSchema
 .pre('find', autoPopulateQueus)
 .pre('findById', autoPopulateQueus)
 .pre('findOne', autoPopulateQueus)
-
+*/
 module.exports=mongoose.model('Queue',queueSchema)

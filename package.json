@@ -15,12 +15,15 @@
     "express": "^4.16.2",
     "express-session": "^1.15.6",
     "generate-key": "0.0.6",
+    "install": "^0.10.1",
     "method-override": "^2.3.10",
     "methods": "^1.1.2",
     "mongoose": "^4.12.4",
     "mongoose-deep-populate": "^3.0.0",
     "mongoose-unique-validator": "^1.0.6",
     "morgan": "^1.9.0",
+    "npm": "^5.5.1",
+    "recursive-lowercase-json": "^0.2.0",
     "underscore": "^1.8.3"
   }
 }
