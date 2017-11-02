@@ -63,7 +63,7 @@ catch(e){
 
 }
 
-
+/*
 
 var allworkstepnames=_.map(queues,v=>{return v.workstepname})
 
@@ -216,3 +216,4 @@ console.log('some rules in queus dont match with rulename in rulebook')
        console.log('all rules dont  have either type/rulename')
        if(!isAllRuleTypeFound)
        console.log('all rules dont  have valid type')
+*/
