@@ -6,7 +6,7 @@ mongoose.Promise =Promise
 var ProcessInstance=require('../../../models/process-model')
 var Workspace=require('../../../models/workspace-model')
 var Queue=require('../../../models/queue-model')
-var Rule=require('../../../models/queue-model')
+var Rule=require('../../../models/rule-model')
 var Workitem=require('../../../models/workitem-model')
 
 var workspaceCtrl={
@@ -82,7 +82,7 @@ handleError:function (res, statusCode) {
       )
       .catch(Promise.CancellationError,err=>{
         console.log('err'+err)
-        res.status(500).send(err)
+        res.status(400).send({err:'workpace not found'})
       })
       .catch(err=>{
         console.log('err'+err)

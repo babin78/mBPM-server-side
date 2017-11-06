@@ -1,48 +1,43 @@
 var _=require('underscore')
 
-
+debugger
 try{
 
   var queues=[
 
-  				  //{workstepname:'work intrudoction' , state:'start',rules:['rule1']},
-            //{workstepname:'work intrudoction' , state:'start',rules:['rule2']},
-            //{workstepname:'work intrudoction', STate:'STart',rules:[""]},  //
-            {workstepname:'Work intrudoction', STATE:'Start',rules:["rule1"]},
-            {workstepname:'decision1', state:'decision',rules:['rule3','rule4','rule5','rule15']},
-  				  {workstepname:'discard', state:'end',rules:'NULL'},
-  				  {workstepname:'exit', state:'end',rules:'NULL'},
-  				  {workstepname:'data-entry', state:'custom',rules:['rule2']},
-  				  {workstepname:'checker', state:'custom',rules:['rule6']},
-  				  {workstepname:'decision2', state:'decision',rules:['rule7','rule8','rule9']},
-  				  {workstepname:'split', state:'split',rules:['rule10']},
-  				  {workstepname:'join', state:'join',rules:['rule11']},
+  				  {workstepname:'Work intrudoction', STATE:'Start',rules:["rule1"]},
+            {workstepname:'data-entry', state:'custom',rules:['rule2']},
+            {workstepname:'decision1', state:'decision',rules:['rule3','rule4','rule5']},
+            {workstepname:'checker', state:'custom',rules:['rule6']},
+            {workstepname:'discard', state:'end',rules:'NULL'},
+            {workstepname:'decision2', state:'decision',rules:['rule7','rule8','rule9']},
+  				  {workstepname:'split', state:'split',rules:['rule10','rule11']},
   				  {workstepname:'tech-verify', state:'custom',rules:['rule12']},
   				  {workstepname:'filegenerate', state:'custom',rules:['rule13']},
-  				  {workstepname:'readresponse', state:'custom',rules:['rule14']}
+  				  {workstepname:'readresponse', state:'custom',rules:['rule14']},
+            {workstepname:'join', state:'join',rules:['rule15']},
+  				  {workstepname:'exit', state:'end',rules:'NULL'}
+
+
 
   			  ]
 
 var          rulebook=[
-
-          				 {rulename:'rule1',type:'auto',to:'data-entry' },
-          				 {rulename:'rule2',type:'auto',to:'decision1'},
-          				 {rulename:'rule3',type:'decision',condition:{ $and:[ {$gt:{amount:100}},{acceptflag:'accept'}]}, to:'checker'},
-                   {rulename:'rule15',type:'decision',condition:{acceptflag:'accept'}, to:'split'},
-                   {rulename:'rule4',type:'decision',condition: {discardflag:'discard'},to:'discard'},
-          				 {rulename:'rule5',type:'decision',condition: 'else', to:'data-entry'},
-
-          				 {rulename:'rule6',type:'auto',to:'decision2'},
-          				 {rulename:'rule7',type:'decision',condition:{acceptflag:'accept'}, to:'split'},
-          				 {rulename:'rule8',type:'decision',condition: {discardflag:'discard'}, to:'discard'},
-          				 {rulename:'rule9',type:'decision',condition: 'else', to:'checker'},
-
-          				 {rulename:'rule10',type:'split',to:'tech-verify'},
-          				 {rulename:'rule11',type:'split',to:'filegenerate'},
+                  {rulename:'rule1',type:'auto',to:'data-entry' },
+                  {rulename:'rule2',type:'auto',to:'decision1' },
+                  {rulename:'rule3',type:'decision',condition:{ $and:[ {$gt:{amount:100}},{acceptflag:'accept'}]}, to:'checker'},
+                  {rulename:'rule4',type:'decision',condition:{acceptflag:'accept'}, to:'split'},
+                  {rulename:'rule5',type:'decision',condition: {discardflag:'discard'},to:'discard'},
+                  {rulename:'rule6',type:'auto',to:'decision2' },
+                  {rulename:'rule7',type:'decision',condition: {repairflag:'repair'}, to:'data-entry'},
+                  {rulename:'rule8',type:'decision',condition:{discardflag:'accept'}, to:'discard'},
+                  {rulename:'rule9',type:'decision',condition: {acceptflag:'accept'},to:'split'},
+                  {rulename:'rule10',type:'split',to:'tech-verify'},
+                  {rulename:'rule11',type:'split',to:'filegenerate'},
           				 {rulename:'rule12',type:'auto',to:'join'},
           				 {rulename:'rule13',type:'auto',to:'readresponse'},
           				 {rulename:'rule14',type:'auto',to:'join'},
-          				 {rulename:'rule16',type:'auto',to:'exit'}
+          				 {rulename:'rule15',type:'auto',to:'exit'}
 
           			   ]
 
@@ -62,7 +57,229 @@ catch(e){
   console.log(e)
 
 }
+/*
+var isallrulesdefined
+var filteredQ=_.filter(queues,v=>{return v.state!='end'})
 
+_.each(filteredQ,v=>{
+
+isallrulesdefined=false
+  var qrules=v.rules
+
+
+  _.each(qrules,v=>{
+    var rrule=_.find(rulebook,r=>{
+      //if(_.has(r,'to'))
+      //isallrulesdefined=true
+     return r.rulename=v
+    })
+
+    if(_.has(rrule,'to'))
+    isallrulesdefined=true
+
+
+
+  })
+  if(!isallrulesdefined)
+  return
+})
+
+if(!isallrulesdefined)
+console.log('at leat one rule should have one to ')
+*/
+
+var allworksteps=_.map(queues,v=>{return v.workstepname})
+var allrules=_.map(rulebook,v=>{return v.rulename})
+var visitedworksteps=[]
+var visitedrules=[]
+var pendings=[]
+
+var traverse=function(workstepname,rulename){
+var nextrules,nextrule,remaining,currentrule,currentworkstep,nextworkstep,nextpendingItem
+
+  try{
+    {
+      if(!_.contains(visitedworksteps,workstepname) && !_.contains(visitedrules,rulename) )
+      {     if(!_.contains(visitedworksteps,workstepname))
+            visitedworksteps.push(workstepname)
+            if(!_.contains(visitedrules,rulename))
+            visitedrules.push(rulename)
+            currentrule=_.find(rulebook,v=>{return v.rulename==rulename})
+            currentworkstep=_.find(queues,v=>{return v.workstepname==workstepname})
+
+            if(currentrule.type!='set')
+            {
+                nextworkstep=_.find(queues,v=>{ return v.workstepname==currentrule.to})
+                if(nextworkstep.state!='end')
+                {
+
+                    nextrules=nextworkstep.rules
+                    nextrule=_.first(nextrules)
+                    remaining=_.rest(nextrules)
+                    if(remaining.length>0)
+                    _.each(remaining,v=>{
+                       pendings.push({workstepname:nextworkstep.workstepname,rulename:v})
+                    })
+                    traverse(nextworkstep.workstepname,nextrule)
+                }
+                else {
+                      if(!_.contains(visitedworksteps,nextworkstep.workstepname))
+                      visitedworksteps.push(nextworkstep.workstepname)
+                        if(pendings.length>0)
+                        {
+                          nextpendingItem=_.first(pendings)
+                          pendings=_.rest(pendings)
+                          traverse(nextpendingItem.workstepname,nextpendingItem.rulename)
+                        }
+                        else {
+                          return
+                        }
+
+                }
+
+            }
+            else {
+              if(pendings.length>0)
+              {
+                nextpendingItem=_.first(pendings)
+                pendings=_.rest(pendings)
+                traverse(nextpendingItem.workstepname,nextpendingItem.rulename)
+              }
+              else {
+                return
+              }
+            }
+        }
+        else if(_.contains(visitedworksteps,workstepname) && _.contains(visitedrules,rulename) ){
+          if(pendings.length>0)
+          {
+            nextpendingItem=_.first(pendings)
+            pendings=_.rest(pendings)
+            traverse(nextpendingItem.workstepname,nextpendingItem.rulename)
+          }
+          else {
+            return
+          }
+        }
+        else if(_.contains(visitedworksteps,workstepname) && !_.contains(visitedrules,rulename) ){
+
+                if(!_.contains(visitedrules,rulename))
+                visitedrules.push(rulename)
+                currentrule=_.find(rulebook,v=>{return v.rulename==rulename})
+                currentworkstep=_.find(queues,v=>{return v.workstepname==workstepname})
+
+                if(currentrule.type!='set')
+                {
+                    nextworkstep=_.find(queues,v=>{ return v.workstepname==currentrule.to})
+                    if(nextworkstep.state!='end')
+                    {
+
+                        nextrules=nextworkstep.rules
+                        nextrule=_.first(nextrules)
+                        remaining=_.rest(nextrules)
+                        if(remaining.length>0)
+                        _.each(remaining,v=>{
+                           pendings.push({workstepname:nextworkstep.workstepname,rulename:v})
+                        })
+                        traverse(nextworkstep.workstepname,nextrule)
+                    }
+                    else {
+                            if(!_.contains(visitedworksteps,nextworkstep.workstepname))
+                            visitedworksteps.push(nextworkstep.workstepname)
+                            if(pendings.length>0)
+                            {
+                              nextpendingItem=_.first(pendings)
+                              pendings=_.rest(pendings)
+                              traverse(nextpendingItem.workstepname,nextpendingItem.rulename)
+                            }
+                            else {
+                              return
+                            }
+
+                    }
+
+                }
+                else {
+                  if(pendings.length>0)
+                  {
+                    nextpendingItem=_.first(pendings)
+                    pendings=_.rest(pendings)
+                    traverse(nextpendingItem.workstepname,nextpendingItem.rulename)
+                  }
+                  else {
+                    return
+                  }
+                }
+        }
+        else{ return}
+
+    }
+
+
+    }
+    catch(e){
+      console.log(e)
+    }
+}
+//console.log(_.find(queues,v=>{ return v.state=='start'}))
+try{
+      runnext=_.find(queues,v=>{ return v.state=='start'})
+
+       var nextrules=runnext.rules
+        var nextrule=_.first(nextrules)
+        var remaining=_.rest(nextrules)
+        if(remaining.length>0)
+        _.each(remaining,v=>{
+           pendings.push({workstepname:runnext.workstepname,rulename:v})
+        })
+        traverse(runnext.workstepname,nextrule)
+
+        var isallworkstepvisited=true
+
+
+      _.each(allworksteps,v=>{
+            var isworkstepvisited=false
+          _.each(visitedworksteps,k=>{
+            if(v==k)
+            isworkstepvisited=true
+
+          })
+          if(!isworkstepvisited)
+          {
+            console.log(v)
+            isallworkstepvisited=false
+          }
+
+      })
+
+      var isallrulevisited=true
+      _.each(allrules,v=>{
+            var isrulevisited=false
+          _.each(visitedrules,k=>{
+            if(v==k)
+            isrulevisited=true
+
+          })
+          if(!isrulevisited)
+          {
+            console.log(v)
+            isallrulevisited=false
+          }
+
+      })
+      if(!isallworkstepvisited && !isallrulevisited)
+      console.log('all workstep/rules are not covered')
+      /*
+      if(!_.contains(allworksteps,visitedworksteps) || !_.contains(allrules,visitedrules)  )
+      { console.log(visitedworksteps)
+        console.log(visitedrules)
+        console.log('all worksteps/rule not matched')
+      }
+      */
+  }
+catch(e){
+console.log(e)
+}
 /*
 
 var allworkstepnames=_.map(queues,v=>{return v.workstepname})

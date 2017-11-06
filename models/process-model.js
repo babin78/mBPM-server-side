@@ -9,7 +9,8 @@ var processSchema=new mongoose.Schema({
 },
   state:{type: String, lowercase: true,enum:states, required: [true, "can't be blank"],Default:'disabled'}, //enabled/disabled/started/stopped/checkin/checkout/starting/stopping/err/invalid
   queues:[{type:mongoose.Schema.Types.ObjectId,ref:'Queue'}],
-  workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'}
+  workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},
+  rulebook:[{type:mongoose.Schema.Types.ObjectId,ref:'Rule'}]
 
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 

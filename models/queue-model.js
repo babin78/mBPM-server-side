@@ -7,13 +7,15 @@ var queueSchema=new mongoose.Schema({
   index: true,
   unique: true
 },
-  queuetype:{type: String, lowercase: true, enum:types,required: [true, "can't be blank"]}, //start//end/custom/decision/split/join
+workstepname:{type: String, lowercase: true, required: [true, "can't be blank"]},
+  state:{type: String, lowercase: true, enum:types,required: [true, "can't be blank"]}, //start//end/custom/decision/split/join
   //prev:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
   //next:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
   //prev:{},
   //next:{},
-  rules:[{type:mongoose.Schema.Types.ObjectId,ref:'Rule'}],
-  workstep:{type: String, lowercase: true, required: [true, "can't be blank"],enum:types},
+  //rules:[{type:mongoose.Schema.Types.ObjectId,ref:'Rule'}],
+  rules:[{type:String,lowercase:true,required: [true, "can't be blank"]}],
+  //workstep:{type: String, lowercase: true, required: [true, "can't be blank"],enum:types},
   workitems:[{type:mongoose.Schema.Types.ObjectId,ref:'Workitem'}],
   ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
   workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},

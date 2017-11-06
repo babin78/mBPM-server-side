@@ -1,19 +1,21 @@
 var mongoose=require('mongoose')
 var uniqueValidator=require('mongoose-unique-validator')
+var types=['auto','decision','split','join','set','expire']
 var ruleSchema=new mongoose.Schema({
-  name:{type: String, lowercase: true, required: [true, "can't be blank"],
+  rulename:{type: String, lowercase: true, required: [true, "can't be blank"],
   //match: [/^[a-zA-Z0-9]$/, 'is invalid'],
-  index: true,
-  unique: true
+  index: true
+
 },
-  type:{type: String, lowercase: true, required: [true, "can't be blank"]}, //auto/decision/split/join/set/expire
-  condition:{type: String, lowercase: true}
+  type:{type: String, lowercase: true,enum:types, required: [true, "can't be blank"]}, //auto/decision/split/join/set/expire
+  condition:{},//else
   from:String,
-  to:String,
+  to:String, //prev
   fromqueue:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
   toqueue:[{type:mongoose.Schema.Types.ObjectId,ref:'Queue'}],
   workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},
-  ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'}
+  ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
+  action:{}//for set and expire
 },{ retainKeyOrder:true,
  timestamps: { createdAt: 'created_at' }})
 

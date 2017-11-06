@@ -1,12 +1,13 @@
+var _=require('underscore')
 var mongoose = require('mongoose')
 var Promise=require('bluebird')
-//var validateprocess=require('./process-validate')
+var validprocesshelper=require('./process-validate-helper')
 mongoose.Promise =Promise
 
 var ProcessInstance=require('../../../models/process-model')
 var Workspace=require('../../../models/workspace-model')
 var Queue=require('../../../models/queue-model')
-var Rule=require('../../../models/queue-model')
+var Rule=require('../../../models/rule-model')
 
 var processCtrl={
 
@@ -39,9 +40,9 @@ var processCtrl={
 
 
   },
-  validate:function(req,res){
+  validateFormat:function(req,res){
 
-    //var errors=validateprocess(req.body)
+    var errors=validprocesshelper.validateFormat(req.body)
     if(!errors)
       res.status(200).send({validate:true})
     else {
@@ -49,40 +50,51 @@ var processCtrl={
     }
 
   },
-  create:function(req,res){
-      console.log(req.body)
-      return Workspace.findOne({name:req.body.workspace}).exec()
-    .then(data=>{
-      if(!data)
-        throw new Promise.CancellationError('workspace not found');
-      else{
-         var processinst=new ProcessInstance({name:req.body.process,state:'disabled',workspace:data._id})
-         data.processes.push(processinst)
-         return Promise.all([processinst,data]).map(p=>p.save())
-
+  validateData:function(req,res){
+    var obj
+    var errors=validprocesshelper.validateFormat(req.body)
+    if(!errors)
+      {
+        obj=validprocesshelper.getToLowerJSON(req.body)
+        if(!obj)
+          return res.status(400).send({validate:false,errors:[{err:'some error occured during conversion '}]})
+        validprocesshelper.validateData(obj)
+                          .then(_=>{ return res.status(200).send({validate:true})})
+                          .catch(err=>{return res.status(400).send({validate:false,err:err.message.toString()})})
       }
-  })
-  .then(data=>{
-    if(!data)
-    {
-       res.status(404).send( {msg:'data not saved'})
+    else {
+      res.status(400).send({validate:false,errors})
     }
-    else{
-      data[0].workspace=data[1]._id
-      res.status(200).send( data[0])
-    }
-  })
-  .catch(Promise.CancellationError,err=>{
-    console.log('err'+err)
-    res.status(404).send(err)
-  })
-  .catch(err=>{
-     console.log(err)
-    res.status(500).send(err)
-  })
+  },
 
 
-},
+  createProcess:function(req,res){
+
+    var obj
+    var errors=validprocesshelper.validateFormat(req.body)
+    if(!errors)
+      {
+        console.log('valid format')
+        obj=validprocesshelper.getToLowerJSON(req.body)
+        if(!obj)
+          return res.status(400).send({validate:false,errors:[{err:'some error occured during conversion '}]})
+        console.log('convertion passed')
+        validprocesshelper.validateData(obj)
+                          .then(_=>{
+                                console.log('validdatapassed')
+                                 return validprocesshelper.createProcess(obj)
+                          })
+                          .then(data=>{
+                            console.log('return data:'+data)
+                             return res.status(200).send(data)
+                          })
+                          .catch(err=>{return res.status(400).send({validate:false,err:err.message.toString()})})
+      }
+    else {
+      res.status(400).send({validate:false,errors})
+    }
+
+  },
 
 deleteprocess:function(req,res){
 
