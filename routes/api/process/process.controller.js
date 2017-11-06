@@ -67,7 +67,32 @@ var processCtrl={
     }
   },
 
+  getByName:function(req,res){
 
+    validprocesshelper.getByName(req.params.workspacename,req.params.processname)
+                      .then(data=>{
+
+                         return res.status(200).send(data)
+                      })
+                      .catch(Promise.CancellationError,err=>{
+                            return res.status(404).send({err:err.message.toString()})
+                      })
+                      .catch(err=>{return res.status(500).send({err:err.message.toString()})})
+
+  },
+  deleteProcessByName:function(req,res){
+
+    validprocesshelper.deleteProcess(req.params.workspacename,req.params.processname)
+                      .then(data=>{
+
+                         return res.status(200).send(data)
+                      })
+                      .catch(Promise.CancellationError,err=>{
+                            return res.status(404).send({err:err.message.toString()})
+                      })
+                      .catch(err=>{return res.status(500).send({err:err.message.toString()})})
+
+  },
   createProcess:function(req,res){
 
     var obj

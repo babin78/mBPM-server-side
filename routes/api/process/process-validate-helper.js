@@ -569,7 +569,6 @@ var createProcessFn=function(obj){
                 resolve(data)
 
               })
-
               .catch(Promise.CancellationError,e=>{
 
                 var badErrReq=new Promise.CancellationError(e.message.toString())
@@ -583,9 +582,78 @@ var createProcessFn=function(obj){
 
   })
 }
+
+var getByNameFn=function(workspacename,processname){
+  return new Promise((resolve,reject)=>{
+
+      return Workspace.findOne({name:workspacename})
+            .then(data=>{
+                if(!data)
+                 throw new Promise.CancellationError('workspace not found');
+
+                 return ProcessInstance.findOne({name:processname,workspace:data._id})
+                     .populate('queues')
+                     .populate('workspace')
+                     .populate('rulebook').exec()
+            })
+            .then(data=>{
+              if(!data)
+               throw new Promise.CancellationError('process not found');
+                  resolve(data)
+              })
+            .catch(Promise.CancellationError,e=>{
+
+              var badErrReq=new Promise.CancellationError(e.message.toString())
+              reject(badErrReq)
+            })
+            .catch(err=>{
+
+                var appErr=new Error(err.message.toString())
+                reject(appErr)
+              })
+          })
+}
+
+var deleteProcessFn=function(workspacename,processname){
+  return new Promise((resolve,reject)=>{
+     var workspace,ps
+      return Workspace.findOne({name:workspacename})
+            .then(data=>{
+                if(!data)
+                 throw new Promise.CancellationError('workspace not found');
+                 workspace=data
+                 return ProcessInstance.findOne({name:processname,workspace:data._id}).exec()
+            })
+            .then(data=>{
+              if(!data)
+               throw new Promise.CancellationError('process not found');
+                ps=data
+                return Promise.all([
+                  ProcessInstance.remove({name:ps.name,workspace:workspace._id}),
+                  Queue.remove({ProcessInstance:ps._id,workspace:workspace._id}),
+                  Rule.remove({ProcessInstance:ps._id,workspace:workspace._id}),
+                ])
+              })
+              .then(_=>{
+                resolve('data deleted successfully ')
+              })
+            .catch(Promise.CancellationError,e=>{
+
+              var badErrReq=new Promise.CancellationError(e.message.toString())
+              reject(badErrReq)
+            })
+            .catch(err=>{
+
+                var appErr=new Error(err.message.toString())
+                reject(appErr)
+              })
+          })
+}
 module.exports={
   validateFormat:validateFormatFn,
   getToLowerJSON:getToLowerJSONFn,
   validateData:validateDataFn,
-  createProcess:createProcessFn
+  createProcess:createProcessFn,
+  getByName:getByNameFn,
+  deleteProcess:deleteProcessFn
 }
