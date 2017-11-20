@@ -145,7 +145,7 @@ var nextrules,nextrule,remaining,currentrule,currentworkstep,nextworkstep,nextpe
     }
 }
 
-var validateFormatFn=function(obj){
+exports.validateFormatFn=function(obj){
   var retval={}
   var errArr=[]
   var isruleBookArrayFound
@@ -402,7 +402,7 @@ var validateFormatFn=function(obj){
 
 }
 
-var getToLowerJSONFn=function(obj){
+exports.getToLowerJSONFn=function(obj){
 
   try{
 
@@ -418,7 +418,7 @@ var getToLowerJSONFn=function(obj){
   }
 }
 
-var validateDataFn=function(obj){
+exports.validateDataFn=function(obj){
 
    return new Promise((resolve,reject)=>{
      Workspace.findOne({name:obj.workspace})
@@ -465,7 +465,7 @@ var validateDataFn=function(obj){
 
 }
 
-var createProcessFn=function(obj){
+exports.createProcessFn=function(obj){
 
   return new Promise((resolve,reject)=>{
       var workpace,ps,queues,rulebook
@@ -583,7 +583,7 @@ var createProcessFn=function(obj){
   })
 }
 
-var getByNameFn=function(workspacename,processname){
+exports.getByNameFn=function(workspacename,processname){
   return new Promise((resolve,reject)=>{
 
       return Workspace.findOne({name:workspacename})
@@ -614,7 +614,7 @@ var getByNameFn=function(workspacename,processname){
           })
 }
 
-var deleteProcessFn=function(workspacename,processname){
+exports.deleteProcessFn=function(workspacename,processname){
   return new Promise((resolve,reject)=>{
      var workspace,ps
       return Workspace.findOne({name:workspacename})
@@ -649,6 +649,7 @@ var deleteProcessFn=function(workspacename,processname){
               })
           })
 }
+/*
 module.exports={
   validateFormat:validateFormatFn,
   getToLowerJSON:getToLowerJSONFn,
@@ -657,3 +658,4 @@ module.exports={
   getByName:getByNameFn,
   deleteProcess:deleteProcessFn
 }
+*/

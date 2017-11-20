@@ -19,6 +19,7 @@ workstepname:{type: String, lowercase: true, required: [true, "can't be blank"]}
   workitems:[{type:mongoose.Schema.Types.ObjectId,ref:'Workitem'}],
   ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
   workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},
+  users:[{type:mongoose.Schema.Types.ObjectId,ref:'User'}]
 
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 queueSchema.plugin(uniqueValidator,{message:'is already taken'});
@@ -41,4 +42,13 @@ queueSchema
 .pre('findById', autoPopulateQueus)
 .pre('findOne', autoPopulateQueus)
 */
+
+queueSchema
+  .virtual('itemcount')
+  .get(function() {
+    return this.workitems.length
+  });
+
+  queueSchema.set('toObject', { virtuals: true });
+  queueSchema.set('toJSON', { virtuals: true });
 module.exports=mongoose.model('Queue',queueSchema)

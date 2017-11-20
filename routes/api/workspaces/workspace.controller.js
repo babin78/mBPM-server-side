@@ -9,36 +9,7 @@ var Queue=require('../../../models/queue-model')
 var Rule=require('../../../models/rule-model')
 var Workitem=require('../../../models/workitem-model')
 
-var workspaceCtrl={
-  respondWithResult:function respondWithResult(res, statusCode) {
-  statusCode = statusCode || 200;
-  return function(entity) {
-    if(entity) {
-      return res.status(statusCode).json(entity);
-    }
-    return null;
-  };
-},
-
-handleEntityNotFound:function (res) {
-  return function(entity) {
-    if(!entity) {
-      res.status(404).end();
-      return null;
-    }
-    return entity;
-  };
-},
-
-handleError:function (res, statusCode) {
-  statusCode = statusCode || 500;
-  return function(err) {
-    res.status(statusCode).send(err);
-  };
-},
-
-  getview:function(req,res){
-
+exports.getview=function(req,res){
      var conditionstr
     if(req.params && req.params.id )
       conditionstr={name:req.params.id}
@@ -54,8 +25,23 @@ handleError:function (res, statusCode) {
     .catch(err=>{
       res.status(500).send(err)
     })
-  },
-  deleteworkspace:function(req,res){
+  }
+
+  exports.getall=function(req,res){
+
+       return Workspace.findOne({}).populate('processes').exec()
+      .then(data=>{
+        if(!data)
+          return res.status(404).send({})
+          res.status(200).send(data)
+      })
+      .catch(err=>{
+        res.status(500).send(err)
+      })
+    }
+
+
+  exports.deleteworkspace=function(req,res){
 
      var conditionstr
     if(req.params && req.params.id )
@@ -99,7 +85,7 @@ handleError:function (res, statusCode) {
 
   },
 
-  createworkspace:function(req,res){
+  exports.createworkspace=function(req,res){
 
      var workspace=new Workspace({name:req.params.name})
     workspace.save()
@@ -110,6 +96,6 @@ handleError:function (res, statusCode) {
     .catch(err=>{res.send(err)})
 
   }
-}
+//}
 
-module.exports=workspaceCtrl
+//module.exports=workspaceCtrl

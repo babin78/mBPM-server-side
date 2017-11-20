@@ -9,10 +9,10 @@ var Workspace=require('../../../models/workspace-model')
 var Queue=require('../../../models/queue-model')
 var Rule=require('../../../models/rule-model')
 
-var processCtrl={
+//var processCtrl={
 
 
-  getview:function(req,res){
+  exports.getview=function(req,res){
     return Workspace.findOne({name:req.params.workspacename}).exec()
     .then(data=>{
       if(!data)
@@ -39,8 +39,8 @@ var processCtrl={
     //.catch(this.handleError(res))
 
 
-  },
-  validateFormat:function(req,res){
+  }
+  exports.validateFormat=function(req,res){
 
     var errors=validprocesshelper.validateFormat(req.body)
     if(!errors)
@@ -49,8 +49,8 @@ var processCtrl={
       res.status(400).send({validate:false,errors})
     }
 
-  },
-  validateData:function(req,res){
+  }
+  exports.validateData=function(req,res){
     var obj
     var errors=validprocesshelper.validateFormat(req.body)
     if(!errors)
@@ -65,9 +65,9 @@ var processCtrl={
     else {
       res.status(400).send({validate:false,errors})
     }
-  },
+  }
 
-  getByName:function(req,res){
+  exports.getByName=function(req,res){
 
     validprocesshelper.getByName(req.params.workspacename,req.params.processname)
                       .then(data=>{
@@ -79,8 +79,8 @@ var processCtrl={
                       })
                       .catch(err=>{return res.status(500).send({err:err.message.toString()})})
 
-  },
-  deleteProcessByName:function(req,res){
+  }
+  exports.deleteProcessByName=function(req,res){
 
     validprocesshelper.deleteProcess(req.params.workspacename,req.params.processname)
                       .then(data=>{
@@ -92,8 +92,8 @@ var processCtrl={
                       })
                       .catch(err=>{return res.status(500).send({err:err.message.toString()})})
 
-  },
-  createProcess:function(req,res){
+  }
+  exports.createProcess=function(req,res){
 
     var obj
     var errors=validprocesshelper.validateFormat(req.body)
@@ -119,9 +119,9 @@ var processCtrl={
       res.status(400).send({validate:false,errors})
     }
 
-  },
+  }
 
-deleteprocess:function(req,res){
+exports.deleteprocess=function(req,res){
 
    var conditionstr
   if(req.params && req.params.id )
@@ -162,6 +162,6 @@ deleteprocess:function(req,res){
 
 
 
-}
+//}
 
-module.exports=processCtrl
+//module.exports=processCtrl
