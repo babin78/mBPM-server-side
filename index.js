@@ -16,7 +16,7 @@ var mongoose = require('mongoose');
 var config=require('./config')
 var Promise=require('bluebird')
 mongoose.Promise =Promise
-
+debugger;
 /*
 var ProcessInstance=require('./models/process-model')
 var Workspace=require('./models/workspace-model')

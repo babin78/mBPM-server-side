@@ -15,11 +15,13 @@ workstepname:{type: String, lowercase: true, required: [true, "can't be blank"]}
   //next:{},
   //rules:[{type:mongoose.Schema.Types.ObjectId,ref:'Rule'}],
   rules:[{type:String,lowercase:true,required: [true, "can't be blank"]}],
+  ruleids:[{type:mongoose.Schema.Types.ObjectId,ref:'Rule'}],
   //workstep:{type: String, lowercase: true, required: [true, "can't be blank"],enum:types},
   workitems:[{type:mongoose.Schema.Types.ObjectId,ref:'Workitem'}],
   ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
   workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},
-  users:[{type:mongoose.Schema.Types.ObjectId,ref:'User'}]
+  users:[{type:mongoose.Schema.Types.ObjectId,ref:'User'}],
+  pendingTransactions:{}
 
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 queueSchema.plugin(uniqueValidator,{message:'is already taken'});

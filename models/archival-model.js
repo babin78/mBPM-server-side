@@ -1,7 +1,7 @@
 var mongoose=require('mongoose')
 var uniqueValidator=require('mongoose-unique-validator');
 var instStateEnum=[1,2,3,4]//1-->default ,for split 1 will split to 2 and 3 ,join back 1,4 -->exit/discard out of process
-var workitemSchema=new mongoose.Schema({
+var archivalitemSchema=new mongoose.Schema({
   status:String, //locked//processing//done//available
   lockedby:String,
   queue:{type:mongoose.Schema.Types.ObjectId,ref:'Queue'},
@@ -22,4 +22,4 @@ workitemSchema
 .pre('find', autoPopulateQueues)
 .pre('findById', autoPopulateQueues)
 */
-module.exports=mongoose.model('Workitem',workitemSchema)
+module.exports=mongoose.model('Workitem',archivalitemSchema)

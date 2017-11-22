@@ -22,7 +22,7 @@ var User=require('../../../models/user-model')
       if(!data)
       throw new Promise.CancellationError('no data found');
       else{
-      res.status(404).send(data)
+      res.status(200).send(data)
     }
     })
     .catch(Promise.CancellationError,err=>{
@@ -45,7 +45,7 @@ var User=require('../../../models/user-model')
       if(!data)
       throw new Promise.CancellationError('no data found');
       else{
-      res.status(404).send(data)
+      res.status(200).send(data)
     }
     })
     .catch(Promise.CancellationError,err=>{
@@ -68,7 +68,7 @@ var User=require('../../../models/user-model')
       if(!data)
       throw new Promise.CancellationError('no data found');
       else{
-      res.status(404).send(data)
+      res.status(200).send(data)
     }
     })
     .catch(Promise.CancellationError,err=>{

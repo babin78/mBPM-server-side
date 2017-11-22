@@ -11,14 +11,14 @@
 						{"workstepname":"data-entry", "state":"custom","rules":["rule2"]},
 						{"workstepname":"decision1", "state":"decision","rules":["rule3","rule4","rule5"]},
 						{"workstepname":"checker", "state":"custom","rules":["rule6"]},
-						{"workstepname":"discard", "state":"end","rules":"NULL"},
+						{"workstepname":"discard", "state":"end","rules":"END"},
 						{"workstepname":"decision2", "state":"decision","rules":["rule7","rule8","rule9"]},
 						{"workstepname":"split", "state":"split","rules":["rule10","rule11"]},
 						{"workstepname":"tech-verify", "state":"custom","rules":["rule12"]},
 						{"workstepname":"filegenerate", "state":"custom","rules":["rule13"]},
 						{"workstepname":"readresponse", "state":"custom","rules":["rule14"]},
 						{"workstepname":"join", "state":"join","rules":["rule15"]},
-						{"workstepname":"exit", "state":"end","rules":"NULL"}
+						{"workstepname":"exit", "state":"end","rules":"END"}
 	  
 			  ],
 			  
@@ -37,7 +37,9 @@
           				 {"rulename":"rule12","type":"auto","to":"join"},
           				 {"rulename":"rule13","type":"auto","to":"readresponse"},
           				 {"rulename":"rule14","type":"auto","to":"join"},
-          				 {"rulename":"rule15","type":"auto","to":"exit"}
+          				 {"rulename":"rule15","type":"auto","to":"exit"},
+						 {"rulename":"END","type":"auto","to":"archive"},
+						 
 				 
 			   ]
 			  

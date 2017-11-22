@@ -10,6 +10,7 @@ var Queue=require('../../../models/queue-model')
 var Rule=require('../../../models/rule-model')
 
 
+
 var allworksteps=[]
 var allrules=[]
 var visitedworksteps=[]
@@ -306,6 +307,7 @@ exports.validateFormatFn=function(obj){
                var allworkstepnames=_.map(obj.process.queues,v=>{return v.workstepname})
 
                 var allruletonames=_.map(obj.process.rulebook,v=>{return v.to})
+                allruletonames=_.filter(allruletonames,v=>{return v!='archive'})
                 var allruleuniquetonames=_.unique(allruletonames)
                 var isAllRuleToFound=true
                 _.each(allruleuniquetonames,v=>{
@@ -499,6 +501,7 @@ exports.createProcessFn=function(obj){
                                       workstepname:q.workstepname,state:q.state,
                                       ProcessInstance:ps._id,workspace:workspace._id,
                                       rules:q.rules})
+
                         return tempQ
                   })
                   console.log(queues)
@@ -521,7 +524,9 @@ exports.createProcessFn=function(obj){
                  if(!data)
                  throw new Promise.CancellationError('process is not resaved ');
                   ps=data
+                  var decsionPrioritySeq=0
                   rulebook=_.map(obj.process.rulebook,r=>{
+
                   var inputdata={}
                         inputdata.rulename=r.rulename
                         inputdata.workspace=workspace._id
@@ -531,16 +536,41 @@ exports.createProcessFn=function(obj){
                        inputdata.condition=r.condition
                     if(_.has(r,'type'))
                           inputdata.type=r.type
-                    if(_.has(r,'to'))
+                    if( r.rulename!='end' && _.has(r,'to'))
                     {
                         inputdata.to=r.to
-                        var toQueue=_.find(queues,v=>{ return v.queuename==obj.process.name+'@'+inputdata.to})
+                        var toQueue=_.find(queues,v=>{ return v.queuename==obj.process.name+'@'+r.to})
                         inputdata.toqueue=toQueue._id
 
                     }
                     if(_.has(r,'action'))
                         inputdata.action=r.action
 
+
+                    switch(r.type) {
+                        case 'set':
+                            inputdata.priority=0
+                            break;
+                        case 'decision':
+                          decsionPrioritySeq=(decsionPrioritySeq+0.1)
+                           inputdata.priority=(1+decsionPrioritySeq)
+                            break
+                        case 'split':
+                            inputdata.priority=2
+                            break
+                        case 'join':
+                            inputdata.priority=3
+                            break
+                        case 'expire':
+                            inputdata.priority=4
+                            break
+                        case 'auto':
+                            inputdata.priority=5
+                            break
+                        default:
+                            inputdata.priority=6
+                            break
+                    }
 
                     return new Rule(inputdata)
                   })
@@ -557,9 +587,32 @@ exports.createProcessFn=function(obj){
                 if(_.isArray(data) && (data.length!==obj.process.rulebook.length ))
                 throw new Promise.CancellationError('not all rules are saved');
 
+
                 rulebook=data
+
+                //add ruleids
+                var modQueues=[]
+                _.each(queues,q=>{
+                     var ruleidArr=[]
+                    _.each(q.rules,qrule=>{
+
+                              if(qrule!="null")
+                              {      var ritem=_.find(rulebook,r=>{
+                                        return r.rulename==qrule
+                                    })
+                                    console.log(ritem)
+                                    ruleidArr.push(ritem._id)
+                              }
+
+                    })
+                    q.ruleids=ruleidArr
+                    modQueues.push(q)
+                })
+
                 ps.rulebook=rulebook
-                return ps.save()
+                //
+                modQueues.push(ps)
+                return Promise.all(modQueues).map(p=>p.save())
 
               })
               .then(data=>{
@@ -629,6 +682,7 @@ exports.deleteProcessFn=function(workspacename,processname){
                throw new Promise.CancellationError('process not found');
                 ps=data
                 return Promise.all([
+                  Workspace.update({_id:workspace._id},{$pull:{ processes: ps._id } }),
                   ProcessInstance.remove({name:ps.name,workspace:workspace._id}),
                   Queue.remove({ProcessInstance:ps._id,workspace:workspace._id}),
                   Rule.remove({ProcessInstance:ps._id,workspace:workspace._id}),

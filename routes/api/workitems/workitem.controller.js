@@ -3,169 +3,150 @@ var mongoose = require('mongoose')
 var Promise=require('bluebird')
 mongoose.Promise =Promise
 
+//var workitemHelper=require('./workitem-helper')
 var ProcessInstance=require('../../../models/process-model')
 var Workspace=require('../../../models/workspace-model')
 var Queue=require('../../../models/queue-model')
 var Rule=require('../../../models/rule-model')
 var User=require('../../../models/user-model')
-//var processCtrl={
+var WorkItem=require('../../../models/workitem-model')
+var Pending=require('../../../models/pending-model')
+var Transaction=require('../../../models/transaction-model')
+
+//testing
+
+var randomIntFromInterval=function (min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+exports.uploadtc=function(req,res){
 
 
-  exports.getAll=function(req,res){
-    return Queue.find({})
-          .populate('workspace','name')
-          .populate('ProcessInstance','name')
-          .populate('users','email')
-          .populate('workitems')
-          .exec()
-    .then(data=>{
-      if(!data)
-      throw new Promise.CancellationError('no data found');
-      else{
-      res.status(404).send(data)
-    }
-    })
-    .catch(Promise.CancellationError,err=>{
-      console.log('err'+err)
-      res.status(404).send(err)
-    })
-    .catch(err=>{return res.status(500).send(err)})
+  return Promise.all([ProcessInstance.findOne({_id:req.body.processid}), Queue.findOne({_id:req.body.queueid})])
+   .then(data=>{
+     if(!data[0] || !data[1])
+     throw new Promise.Error('not found')
+
+     workitem=new WorkItem()
+     //workitem.data=randomIntFromInterval(1,100)
+     workitem.data=req.body.data
+     workitem.status='available'
+     workitem.queue=req.body.queueid
+     workitem.ProcessInstance=req.body.processid
+     workitem.workspace=data[0].workspace._id
+     workitem.instance=1
 
 
-  }
 
-  exports.getOne=function(req,res){
-    return Queue.findOne({_id:req.params.id})
-          .populate('workspace','name')
-          .populate('ProcessInstance','name')
-          .populate('users','email')
-          .populate('workitems')
-          .exec()
-    .then(data=>{
-      if(!data)
-      throw new Promise.CancellationError('no data found');
-      else{
-      res.status(404).send(data)
-    }
-    })
-    .catch(Promise.CancellationError,err=>{
-      console.log('err'+err)
-      res.status(404).send(err)
-    })
-    .catch(err=>{return res.status(500).send(err)})
+     data[1].workitems.push(workitem)
+      pending=new Pending({prev:req.body.queueid  ,workitem:workitem,ProcessInstance:req.body.processid,type:'upload'})
+     return Promise.all([workitem,data[1],pending]).map(p=>p.save())
+
+   })
+   .then(data=>{return res.status(200).send(data)})
+   .catch(err=>{
+     return res.status(500).send({err:err.message})
+   })
+
+}
 
 
-  }
 
-  exports.getByProcessID=function(req,res){
-    return Queue.findOne({ProcessInstance:req.params.id})
-          .populate('workspace','name')
-          .populate('ProcessInstance','name')
-          .populate('users','email')
-          .populate('workitems')
-          .exec()
-    .then(data=>{
-      if(!data)
-      throw new Promise.CancellationError('no data found');
-      else{
-      res.status(404).send(data)
-    }
-    })
-    .catch(Promise.CancellationError,err=>{
-      console.log('err'+err)
-      res.status(404).send(err)
-    })
-    .catch(err=>{return res.status(500).send(err)})
+exports.uploadWorkItem=function(req,res){
 
+   //res.send({process:req.process,queue:req.queue})
+   workitem=new WorkItem()
+   workitem.data=req.body.data
+   //workitem.status='available'
+   //workitem.queue=req.queue._id
+   workitem.ProcessInstance=req.process._id
+   workitem.workspace=req.process.workspace
+   workitem.instance=1
 
-  }
-
-  exports.addUser=function(req,res){
-
-    if(!req.body.queueid)
-      return res.status(404).send({err:'queueid is not defined'})
-    if(!req.body.userid)
-        return res.status(404).send({err:'userid is not defined'})
-    if((!mongoose.Types.ObjectId.isValid(req.body.userid)) || (!mongoose.Types.ObjectId.isValid(req.body.queueid)))
-         return res.status(404).send({err:'either useridor queueid is invalid'})
-
-    return Promise.all([Queue.findOne({_id:req.body.queueid}),User.findOne({_id:req.body.userid})])
-    .then(data=>{
-      if(!data[0])
-        throw new Promise.CancellationError('queue not found');
-      if(!data[1])
-        throw new Promise.CancellationError('user not found');
-
-      var isUserAlreadyThere=_.find(data[0].users,u=>{return u==req.body.userid})
-
-      if(isUserAlreadyThere)
-        throw new Promise.CancellationError('user is already added');
-
-      data[0].users.push(data[1]._id)
-      return data[0].save()
-    })
-    .then(_=>{
-      return Queue.findOne({_id:req.body.queueid})
-            .populate('workspace','name')
-            .populate('ProcessInstance','name')
-            .populate('users','email')
-            .populate('workitems')
-            .exec()
-    })
-    .then(data=>{
-      res.status(200).send(data)
-    })
-    .catch(Promise.CancellationError,err=>{
-      console.log('err'+err)
-      res.status(404).send({err:err.message})
-    })
-    .catch(err=>{return res.status(500).send({err:err.message})})
+   //queue=req.queue
+   //queue.workitems.push(workitem)
+   //console.log(queue)
+   //console.log(workitem)
+   pending=new Pending({workitem:workitem,ProcessInstance:req.process._id,type:'upload'})
+   return Promise.all([workitem,pending]).map(p=>p.save())
+         /*.then(data=>{
+           return WorkItem.findOne({_id:data[0]._id})
+                 .populate('queue','queuename')
+                 .populate('ProcessInstance','name')
+                 .populate('workspace','name')
+                 .exec()
+         })*/
+         .then(data=>{
+           return res.status(200).send(data)
+         })
+         .catch(Promise.CancellationError,err=>{
+           console.log('err'+err)
+           return res.status(404).send({err:err.message})
+         })
+         .catch(err=>{return res.status(500).send({err:err.message})})
 
 
-  }
-
-  exports.removeUser=function(req,res){
-
-    if(!req.body.queueid)
-      return req.status(400).send({err:'queueid is not defined'})
-    if(!req.body.userid)
-        return req.status(400).send({err:'userid is not defined'})
-
-    if((!mongoose.Types.ObjectId.isValid(req.body.userid)) || (!mongoose.Types.ObjectId.isValid(req.body.queueid)))
-             return res.status(400).send({err:'either useridor queueid is invalid'})
 
 
-    return Promise.all([Queue.findOne({_id:req.body.queueid}),User.findOne({_id:req.body.userid})])
-    .then(data=>{
-      if(!data[0])
-        throw new Promise.CancellationError('queue not found');
-      if(!data[1])
-        throw new Promise.CancellationError('user not found');
-      var isUserAlreadyThere=_.find(data[0].users,u=>{return u==req.body.userid})
-      if(!isUserAlreadyThere)
-        throw new Promise.CancellationError('user is already removed');
-
-      var newUserList=_.reject(data[0].users,u=>{return u==req.body.userid})
-      console.log(newUserList)
-      data[0].users=newUserList
-      return data[0].save()
-    })
-    .then(_=>{
-      return Queue.findOne({_id:req.body.queueid})
-            .populate('workspace','name')
-            .populate('ProcessInstance','name')
-            .populate('users','email')
-            .populate('workitems')
-            .exec()
-    })
-    .then(data=>{
-      res.status(200).send(data)
-    })
-    .catch(Promise.CancellationError,err=>{
-      console.log('err'+err)
-      res.status(404).send({err:err.message})
-    })
-    .catch(err=>{return res.status(500).send({err:err.message})})
+}
 
 
-  }
+
+
+exports.deleteWorkItem=function(req,res){
+
+      return Promise.all([WorkItem.remove({ProcessInstance:req.process._id}),
+                          Queue.update({ProcessInstance:req.process._id},{workitems:[]},{ multi: true}),
+                          Pending.remove({ProcessInstance:req.process._id}),
+                          Transaction.remove({ProcessInstance:req.process._id})
+                        ])
+         .then(data=>{
+           return res.status(200).send('done')
+         })
+         .catch(Promise.CancellationError,err=>{
+           console.log('err'+err)
+           return res.status(404).send({err:err.message})
+         })
+         .catch(err=>{return res.status(500).send({err:err.message})})
+
+
+
+
+}
+
+exports.getAllWorkItem=function(req,res){
+
+      return WorkItem.find({}).exec().then(data=>{
+           return res.status(200).send(data)
+         })
+         .catch(Promise.CancellationError,err=>{
+           console.log('err'+err)
+           return res.status(404).send({err:err.message})
+         })
+         .catch(err=>{return res.status(500).send({err:err.message})})
+
+
+
+
+}
+
+
+exports.getOneWorkItem=function(req,res){
+
+      return WorkItem.find({_id:req.params.id})
+            //.populate('queue')
+            //.populate('ProcessInstance','name')
+            //.populate('workspace','name')
+            .exec().then(data=>{
+           return res.status(200).send(data)
+         })
+         .catch(Promise.CancellationError,err=>{
+           console.log('err'+err)
+           return res.status(404).send({err:err.message})
+         })
+         .catch(err=>{return res.status(500).send({err:err.message})})
+
+
+
+
+}
