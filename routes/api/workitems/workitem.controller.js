@@ -95,11 +95,18 @@ exports.uploadWorkItem=function(req,res){
 
 exports.deleteWorkItem=function(req,res){
 
-      return Promise.all([WorkItem.remove({ProcessInstance:req.process._id}),
+      /*return Promise.all([WorkItem.remove({ProcessInstance:req.process._id}),
                           Queue.update({ProcessInstance:req.process._id},{workitems:[]},{ multi: true}),
                           Pending.remove({ProcessInstance:req.process._id}),
                           Transaction.remove({ProcessInstance:req.process._id})
                         ])
+      */
+      return Promise.all([WorkItem.remove({}),
+                          Queue.update({},{workitems:[]},{ multi: true}),
+                          Pending.remove({}),
+                          Transaction.remove({})
+                        ])
+
          .then(data=>{
            return res.status(200).send('done')
          })

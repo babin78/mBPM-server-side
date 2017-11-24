@@ -25,12 +25,12 @@ var ruleSchema=new mongoose.Schema({
 ruleSchema.plugin(uniqueValidator,{message:'is already taken'});
 /*
 var autoPopulateProcess = function(next) {
-    this.populate('queues')
+    this.populate('toqueue')
     //.populate('workspace');
     next();
 };
 
-processSchema
+ruleSchema
 .pre('find', autoPopulateProcess)
 .pre('findById', autoPopulateProcess)
 .pre('findOne', autoPopulateProcess)

@@ -29,10 +29,12 @@ queueSchema.plugin(uniqueValidator,{message:'is already taken'});
 queueSchema.virtual('itemcount').get(function () {
   return this.workitems.length;
 });
-
+*/
+/*
 var autoPopulateQueus = function(next) {
     this//.populate('prev')
-         .populate('next')
+         .populate('ruleids')
+         .populate('workitems')
          //.populate('workitems')
          //.populate('ProcessInstance')
 

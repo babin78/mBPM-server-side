@@ -40,6 +40,7 @@ var User=require('../../../models/user-model')
           .populate('ProcessInstance','name')
           .populate('users','email')
           .populate('workitems')
+          .populate('ruleids')
           .exec()
     .then(data=>{
       if(!data)
