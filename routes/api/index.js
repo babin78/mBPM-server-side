@@ -9,6 +9,7 @@ router.use('/processes', require('./processes'));
 router.use('/users', require('./users'));
 router.use('/queues', require('./queues'));
 router.use('/workitems', require('./workitems'));
+router.use('/metadata', require('./metadata'));
 //router.use('/daemon', require('./daemon'));
 //router.use('/groups', require('./groups'));
 

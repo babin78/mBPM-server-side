@@ -21,7 +21,7 @@ workstepname:{type: String, lowercase: true, required: [true, "can't be blank"]}
   ProcessInstance:{type:mongoose.Schema.Types.ObjectId,ref:'ProcessInstance'},
   workspace:{type:mongoose.Schema.Types.ObjectId,ref:'Workspace'},
   users:[{type:mongoose.Schema.Types.ObjectId,ref:'User'}],
-  pendingTransactions:{}
+  pendingTransactions:[{type:mongoose.Schema.Types.ObjectId,ref:'Transaction'}]
 
 },{ retainKeyOrder:true, timestamps: { createdAt: 'created_at' }})
 queueSchema.plugin(uniqueValidator,{message:'is already taken'});

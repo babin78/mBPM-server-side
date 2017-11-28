@@ -5,46 +5,63 @@ if(!processid)
   process.exit(0)
 }
 
-
 var mongoose = require('mongoose')
 const util = require('util')
 var config=require('./config')
 var Promise=require('bluebird')
 var _=require('underscore')
 mongoose.Promise =Promise
-
 //custom AppError
 //https://www.bennadel.com/blog/2828-creating-custom-error-objects-in-node-js-with-error-capturestacktrace.htm
-
 var appError = require( "./AppError" ).createAppError;
-
 var Pending=require('./models/pending-model')
 var Transaction=require('./models/transaction-model')
-  //process.argv[2]
-
-
 
 mongoose.connect(config.dbURL, config.mongo.options).catch(err=>{
   console.log('some error occured during database connection')
   process.exit(1)
 })
 
-/*
-function connectDatabase(){
-  return Promise.try(_>{
-    return mongoose.connect(config.dbURL, config.mongo.options)
+function getPendingHangedAll(){
+  return Promise.try(function(){
+    return Pending.aggregate([
+                                  {$match:{
+                                     $nor:[{status:null},{status:'done'}]
+                                  }
+                                  },
+                                  {$project:
+                                      {
+                                          _id:1,
+                                          //timediff:{$subtract:[new Date(),"$updatedAt"]},
+                                          isHigh:{ $gte:[{$divide:[{$subtract:[new Date(),"$updatedAt"]},1000*60]},5]}
 
-  }).then(_=>{return true})
+                                       }
+
+                                  },
+                                  {$match:{
+                                         "isHigh":true
+                                      }
+                                  }
+                            ])
+  })
+  .then(data=>{return data})
 }
 
-*/
+function updatePendingMany(idArr){
+  return Promise.try(function(){
+     return Pending.update({_id:{$in:idArr}},{status:null},null)
+
+  })
+  .then(data=>{return data})
+}
+
 function getPendingOne(typeval,processid){
 
   return Promise.try(function(){
 
     return Pending.aggregate([
       {$match:{status:null,type:typeval,ProcessInstance:mongoose.Types.ObjectId(processid)}},
-      {$limit:1},
+      //{$limit:1},
       {$lookup:
           {
             from: "queues",
@@ -127,13 +144,70 @@ function findTransactionOne(pendingID){
   }).then(data=>{return data})
 }
 
-function insertTransactionOne(sourceQueueID,destinationQueueID,workitemID,type,pendingID,ProcessInstanceID){
+function getLongPendingMany(processid){
+//return list of the pending items whose status is not null or done and pending interval>5min
+  return Promise.try(function(){
+    return Pending.aggregate([
+                      {$match:
+                          {
+                             $and:
+                                   [ {ProcessInstance : mongoose.Types.ObjectId(processid)},
+                                    {$nor:[{"status":null},{"status":'done'}]}
+                                    ]
+
+                          }
+                       },
+                       {$project:{
+
+                                _id:1,
+                                prev : "$prev",
+                                workitem : "$workitem",
+                                ProcessInstance : "$ProcessInstance",
+                                type : "$type",
+                                created_at : "$created_at",
+                                updatedAt : "$updatedAt",
+                                diff_milis:{$subtract:[new ISODate(),"$updatedAt"]},
+                                status:"$status",
+                                lockedby:"$lockedby",
+
+                           }
+
+                       },
+                       {$project:{
+
+                                _id:1,
+                                prev : "$prev",
+                                workitem : "$workitem",
+                                ProcessInstance : "$ProcessInstance",
+                                type : "$type",
+                                status:"$status",
+                                lockedby:"$lockedby",
+                                created_at : "$created_at",
+                                updatedAt : "$updatedAt",
+                                diff_min:{$divide:["$diff_milis",1000*60]},
+                                isHigh:{  $gt:[{$divide:["$diff_milis",1000*60]},5]}
+                           }
+
+
+                       },
+                       {$match:{isHigh:true}}
+
+
+
+
+
+                    ])
+
+  }).then(data=>{return data})
+}
+
+function insertTransactionOne(sourceQueueID,destinationQueueID,workitemID,typeval,pendingID,ProcessInstanceID){
   return Promise.try(function(){
 
     txn=new Transaction({        source:sourceQueueID,
                                  destination:destinationQueueID,
                                  item:workitemID,
-                                 type:type,
+                                 type:typeval,
                                  state:"initial",
                                  pending:pendingID,
                                  ProcessInstance: ProcessInstanceID,
@@ -147,12 +221,9 @@ function insertTransactionOne(sourceQueueID,destinationQueueID,workitemID,type,p
 var txn,pnd
 console.time("count")
 
-//connectDatabase()
 getPendingOne('upload',processid)
 .then(data=>{
-  //console.log(data)
   if(!data)
-   //throw new Promise.CancellationError('no pending item found')
    throw(
         appError({
             type: "app.pendingItem.notFound",
@@ -162,83 +233,49 @@ getPendingOne('upload',processid)
           })
       )
    pnd=data
-   //updatePendingOne(id,status,lockedby,errordesc)
    return updatePendingOne(pnd._id,'processing','ps',null )
 
 })
 .then(data=>{
   if(!data)
-   //throw new Promise.CancellationError('update pending item failed')
    throw(
         appError({
-
             type: "app.pendingItem.updateFail",
             message: "update pending item failed."//,
-            //detail: util.format( "The argument [%s] is required but was not passed-in.", "foo" ),
-            //extendedInfo: "No! No weezing the joo-ooce!"
-
           })
     )
-
-   pnd=data
-
    return findTransactionOne(pnd._id)
 })
 .then(data=>{
   if(data)
-  //throw new Promise.CancellationError('transaction already found')
   throw(
        appError({
-
            type: "app.transactionItem.alreadyFound",
            message: "transaction already found."//,
-           //detail: util.format( "The argument [%s] is required but was not passed-in.", "foo" ),
-           //extendedInfo: "No! No weezing the joo-ooce!"
-
          })
    )
-
-
-
-  //insertTransactionOne(sourceQueueID,destinationQueueID,workitemID,type,pendingID,ProcessInstanceID)
   return  insertTransactionOne(pnd.source,pnd.toqueue,pnd.workitem,'move',pnd._id,pnd.ProcessInstance)
 })
 .then(data=>{
   if(!data)
-  //throw new Promise.CancellationError('transaction insert failed')
   throw(
        appError({
-
-           type: "app.transactionItem.insertFail",
+         type: "app.transactionItem.insertFail",
            message: "transaction insert failed."//,
-           //detail: util.format( "The argument [%s] is required but was not passed-in.", "foo" ),
-           //extendedInfo: "No! No weezing the joo-ooce!"
-
          })
    )
-
-
   txn=data
-
-  //updatePendingOne(id,status,lockedby,errordesc)
   return updatePendingOne(pnd._id,'done',null,null )
 
 })
 .then(data=>{
   if(!data)
-  //throw new Promise.CancellationError('pendingitem status reupdate failed')
   throw(
        appError({
-
-           type: "app.pendingItem.updateFail2",
+         type: "app.pendingItem.updateFail2",
            message: "pendingitem status reupdate failed."//,
-           //detail: util.format( "The argument [%s] is required but was not passed-in.", "foo" ),
-           //extendedInfo: "No! No weezing the joo-ooce!"
-
          })
    )
-
-
   console.timeEnd("count")
   console.log('transaction created sucessfully.')
   console.log(util.inspect(txn, false, null))
@@ -257,7 +294,6 @@ getPendingOne('upload',processid)
               process.exit(0)
               break
         case "app.transactionItem.alreadyFound":
-              //return updatePendingOne(pnd._id,'processing','ps',null )
               console.timeEnd("count")
               console.log(err.message)
               return updatePendingOne(pnd._id,'done',null,null )
@@ -269,16 +305,12 @@ getPendingOne('upload',processid)
                 console.timeEnd("count")
                 throw new Error(err.message)})
               break
-
-
         default:
-
-            //console.log(err.message)
-            throw( err );
-
-        break;
+              throw( err );
+              break;
     }
 })
-
-.catch(err=>{console.timeEnd("count")
-console.log(err)})
+.catch(err=>{
+  console.timeEnd("count")
+  console.log(err)
+})

@@ -11,8 +11,8 @@ router.post('/uploadworkitem',
           workitemHelper.checkProcessQueue,
           workitemCtrl.uploadWorkItem)
 router.post('/cleanDanger',
-                    passport.isAuthenticated,
-                    workitemHelper.checkProcess,
+                    //passport.isAuthenticated,
+                    //workitemHelper.checkProcess,
                     workitemCtrl.deleteWorkItem)
 router.get('/',      workitemCtrl.getAllWorkItem)
 router.get('/:id',      workitemCtrl.getOneWorkItem)
